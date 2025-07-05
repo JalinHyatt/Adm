@@ -1,0 +1,100 @@
+-- Add this beneath your existing contentFrames and tab setup
+
+local UserInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+
+-- Key input area
+local keyFrame = Instance.new("Frame", gui)
+keyFrame.Size = UDim2.new(0, 250, 0, 80)
+keyFrame.Position = UDim2.new(0.5, -125, 0.05, 0)
+keyFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+keyFrame.Visible = true
+
+local keyLabel = Instance.new("TextLabel", keyFrame)
+keyLabel.Size = UDim2.new(1, 0, 0, 30)
+keyLabel.Position = UDim2.new(0, 0, 0, 0)
+keyLabel.Text = "Enter Key to Unlock Hub"
+keyLabel.TextColor3 = Color3.new(1, 1, 1)
+keyLabel.BackgroundTransparency = 1
+keyLabel.TextScaled = true
+
+local keyBox = Instance.new("TextBox", keyFrame)
+keyBox.Size = UDim2.new(1, -20, 0, 30)
+keyBox.Position = UDim2.new(0, 10, 0, 35)
+keyBox.PlaceholderText = "Enter Key Here"
+keyBox.Text = ""
+keyBox.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+keyBox.TextColor3 = Color3.new(1, 1, 1)
+keyBox.TextScaled = true
+
+-- Unlock variable
+local isUnlocked = false
+
+keyBox.FocusLost:Connect(function()
+    if keyBox.Text == "JaydenDaniels" then
+        isUnlocked = true
+        keyFrame.Visible = false
+        for _, frame in pairs(contentFrames) do
+            frame.Visible = false
+        end
+        contentFrames["Pet/Egg Duper"].Visible = true
+    end
+end)
+
+-- ⏳ Timer overlay on each tab
+for tabName, content in pairs(contentFrames) do
+    local timerLabel = Instance.new("TextLabel", content)
+    timerLabel.Size = UDim2.new(1, 0, 0, 50)
+    timerLabel.Position = UDim2.new(0, 0, 0, 0)
+    timerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    timerLabel.BackgroundTransparency = 1
+    timerLabel.TextScaled = true
+
+    local loadingLabel = Instance.new("TextLabel", content)
+    loadingLabel.Size = UDim2.new(1, 0, 0, 30)
+    loadingLabel.Position = UDim2.new(0, 0, 1, -60)
+    loadingLabel.Text = "Loading Hub\nLoading Adopt Me Scripts"
+    loadingLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+    loadingLabel.BackgroundTransparency = 1
+    loadingLabel.TextScaled = true
+    loadingLabel.Visible = false
+
+    content.Visible = false
+
+    local function startTimer()
+        if isUnlocked then
+            timerLabel.Visible = false
+            loadingLabel.Visible = false
+            return
+        end
+
+        local seconds = 120
+        timerLabel.Visible = true
+        loadingLabel.Visible = false
+
+        while seconds > 0 and not isUnlocked do
+            timerLabel.Text = "⏳ Unlocking in: " .. tostring(seconds) .. "s"
+            wait(1)
+            seconds -= 1
+        end
+
+        if not isUnlocked then
+            timerLabel.Visible = false
+            loadingLabel.Visible = true
+            wait(3)
+            loadingLabel.Visible = false
+        end
+    end
+
+    -- Run the timer when this tab is shown
+    for _, tabButton in pairs(sidePanel:GetChildren()) do
+        if tabButton:IsA("TextButton") and tabButton.Name == tabName then
+            tabButton.MouseButton1Click:Connect(function()
+                if not isUnlocked then
+                    spawn(startTimer)
+                end
+            end)
+        end
+    end
+end
+
